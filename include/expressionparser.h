@@ -3,8 +3,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "execpipeline.h"
-#include "pipelinemath.h"
+#include "../include/execpipeline.h"
+#include "../include/pipelinemath.h"
 
 
 

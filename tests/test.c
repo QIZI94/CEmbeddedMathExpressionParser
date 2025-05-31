@@ -1,4 +1,4 @@
-#include "expressionparser.h"
+#include "../include/expressionparser.h"
 
 #include <stdio.h>
 

@@ -1,7 +1,7 @@
 #ifndef PIPELINEMATH_H
 #define PIPELINEMATH_H
 
-#include "execpipeline.h"
+#include "../include/execpipeline.h"
 #include <inttypes.h>
 #include <string.h>
 #include <stdbool.h>

@@ -2,7 +2,7 @@
 
 #include <ctype.h>
 
-#include "expressionparser.h"
+#include "../include/expressionparser.h"
 
 // helper static functions
 

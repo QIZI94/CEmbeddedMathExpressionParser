@@ -1,4 +1,4 @@
-#include "pipelinemath.h"
+#include "../include/pipelinemath.h"
 
 #include <ctype.h>
 
