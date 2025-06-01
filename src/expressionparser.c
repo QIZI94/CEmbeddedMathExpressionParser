@@ -222,5 +222,8 @@ ParsingError parseAddSubToken(Pipeline* pipeline, PeekableStringSlice* peekableS
 }
 
 ParsingError compileExpression(Pipeline* pipeline, PeekableStringSlice* peekableSlice, PipelineVariablesSlice variables){
+	if(peekableSlice->slice.len == 0 || peekableSlice->slice.str == NULL){
+		return PARSING_ERROR(INPUT_EMPTY, 0, ' ');
+	}
 	return parseAddSubToken(pipeline, peekableSlice, variables);
 }
