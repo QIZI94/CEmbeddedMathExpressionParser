@@ -39,7 +39,12 @@ extern void clearStack(PipelineStack* stack);
 extern void initStack(PipelineStack* stack);
 extern void pushStack(PipelineStack* stack, ValueType value);
 extern ValueType popStack(PipelineStack* stack);
+void pushStackUnchecked(PipelineStack* stack, ValueType value);
+ValueType popStackUnchecked(PipelineStack* stack);
+
 extern const ValueType* getPtrFromStackIndex(const PipelineStack* stack, Index index);
+extern uint8_t lengthOfStack(const PipelineStack* stack);
+extern uint8_t capacityOfStack(const PipelineStack* stack);
 
 // PIPELINE VARIANT
 typedef enum {
@@ -77,7 +82,7 @@ typedef struct{
 	const PipelineVariable* vars;
 	int8_t len;
 } PipelineVariablesSlice;
-#define MAKE_SLICE_FROM_CONST_PIPELINE_VARIABLES(vars) (PipelineVariablesSlice){vars, (sizeof(vars)/sizeof(vars[0])) - 1}
+#define MAKE_SLICE_FROM_CONST_PIPELINE_VARIABLES(vars) (PipelineVariablesSlice){vars, (sizeof(vars)/sizeof(vars[0]))}
  
 // PIPELINE
 
@@ -91,9 +96,10 @@ extern void clearPipeline(Pipeline* pipeline);
 extern void initPipeline(Pipeline* pipeline);
 extern void pushPipeline(Pipeline* pipeline, PipelineVariant value);
 extern const PipelineVariant* getPtrFromPipelineIndex(const Pipeline* pipeline, Index index);
-
+extern uint8_t lengthOfPipeline(const Pipeline* pipeline);
+extern uint8_t capacityOfPipeline(const Pipeline* pipeline);
 
 extern ValueType executePipeline(const Pipeline* pipeline, PipelineStack* stack, PipelineVariablesSlice variables, bool clearStackOnExecution);
-
+extern ValueType executePipelineUnchecked(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables);
 
 #endif

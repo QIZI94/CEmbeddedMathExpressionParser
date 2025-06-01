@@ -1,23 +1,24 @@
 #include "../include/execpipeline.h"
 
 
+
 // VARIANT HANDLERS
 
-typedef void (*PipelineVariantHandler)(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice variables);
+typedef void (*PipelineVariantHandler)(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* variables);
 
-static void handleConstant(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice){
+static void handleConstant(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* _v){
 	pushStack(stack, variant->asConstant);
 }
-static void handleVariableIndex(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice variables){
-	PipelineVariable variable = variables.vars[variant->asVariableIndex];
+static void handleVariableIndex(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* variables){
+	PipelineVariable variable = variables->vars[variant->asVariableIndex];
 	pushStack(stack, variable.value);
 }
-static void handleOperation(const PipelineVariant* variant, PipelineStack *stack, const PipelineVariablesSlice){
+static void handleOperation(const PipelineVariant* variant, PipelineStack *stack, const PipelineVariablesSlice* _v){
 	PipelineOperation op = variant->asOperation;
 	ValueType result = op(stack);
 	pushStack(stack, result);
 }
-void handleNone(const PipelineVariant* variant, PipelineStack*, const PipelineVariablesSlice){}
+void handleNone(const PipelineVariant* variant, PipelineStack* _s, const PipelineVariablesSlice* _v){}
 
 // CONSTANT
 // VARIABLE_INDEX
@@ -28,6 +29,27 @@ static const PipelineVariantHandler variantHandlers[] = {
 	handleConstant,
 	handleVariableIndex,
 	handleOperation,
+	handleNone
+};
+
+static void handleConstantUnchecked(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* _v){
+	pushStackUnchecked(stack, variant->asConstant);
+}
+static void handleVariableIndexUnchecked(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* variables){
+	PipelineVariable variable = variables->vars[variant->asVariableIndex];
+	pushStackUnchecked(stack, variable.value);
+}
+static void handleOperationUnchecked(const PipelineVariant* variant, PipelineStack *stack, const PipelineVariablesSlice* _v){
+	PipelineOperation op = variant->asOperation;
+	ValueType result = op(stack);
+	pushStackUnchecked(stack, result);
+}
+
+
+static const PipelineVariantHandler variantHandlersUnchecked[] = {
+	handleConstantUnchecked,
+	handleVariableIndexUnchecked,
+	handleOperationUnchecked,
 	handleNone
 };
 
@@ -70,6 +92,14 @@ ValueType popStack(PipelineStack* stack){
 	return stack->entries[stack->index--];
 }
 
+void pushStackUnchecked(PipelineStack* stack, ValueType value){
+	stack->entries[++stack->index] = value;
+}
+
+ValueType popStackUnchecked(PipelineStack* stack){
+	return stack->entries[stack->index--];
+}
+
 const ValueType* getPtrFromStackIndex(const PipelineStack* stack, Index index){
 	if(stack->index == NONE_INDEX){
 		return NULL;
@@ -78,6 +108,14 @@ const ValueType* getPtrFromStackIndex(const PipelineStack* stack, Index index){
 	return &stack->entries[stack->index];	
 }
 
+uint8_t lengthOfStack(const PipelineStack* stack){
+	return stack->index + 1;
+}
+
+uint8_t capacityOfStack(const PipelineStack *stack)
+{
+	return PIPELINE_STACK_SIZE;
+}
 
 // PIPELINE VARIANT
 
@@ -85,7 +123,7 @@ PipelineVariant makeStepAsConstant(ValueType value)
 {
     PipelineVariant result = {
         .type = CONSTANT,
-        .asConstant = value
+        {.asConstant = value}
     };
     return result;
     
@@ -94,7 +132,7 @@ PipelineVariant makeStepAsConstant(ValueType value)
 PipelineVariant makeStepAsVariableIndex(Index value){
     PipelineVariant result = {
         .type = VARIABLE_INDEX,
-        .asVariableIndex = value
+        {.asVariableIndex = value}
     };
     return result;
 }
@@ -102,7 +140,7 @@ PipelineVariant makeStepAsVariableIndex(Index value){
 PipelineVariant makeStepAsOperation(PipelineOperation value){
     PipelineVariant result = {
         .type = OPERATION,
-        .asOperation = value
+        {.asOperation = value}
     };
     return result;
 }
@@ -146,6 +184,15 @@ const PipelineVariant* getPtrFromPipelineIndex(const Pipeline* pipeline, Index i
 	return &pipeline->entries[pipeline->index];	
 }
 
+uint8_t lengthOfPipeline(const Pipeline *pipeline){
+	return pipeline->index + 1;;
+}
+
+uint8_t capacityOfPipeline(const Pipeline *pipeline)
+{
+	return PIPELINE_SIZE;
+}
+
 ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables, bool clearStackOnExecution){
 	if(clearStackOnExecution){
 		clearStack(stack);
@@ -161,20 +208,19 @@ ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, Pipeli
 			return MISSING_VALUE;
 		}
 		const PipelineVariantHandler handler = variantHandlers[variantType];
-		handler(variant, stack, variables);
-		/*if(variant->type == OPERATION){
-			PipelineOperation op = variant->asOperation;
-			ValueType result = op(stack);
-			pushStack(stack, result);
-		}
-		else if(variant->type == CONSTANT){
-			ValueType value = variant->asConstant;
-			pushStack(stack, value);
-		}
-		else if(variant->type == VARIABLE_INDEX){
-			PipelineVariable variable = variables.vars[variant->asVariableIndex];
-			pushStack(stack, variable.value);
-		}*/
+		handler(variant, stack, &variables);
+	}
+
+	return popStack(stack);
+}
+ValueType executePipelineUnchecked(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables){
+
+	clearStack(stack);
+	uint8_t pipelineLength = pipeline->index + 1;
+	for(Index pipelineIdx = 0; pipelineIdx < pipelineLength; pipelineIdx++){
+		const PipelineVariant* variant = &pipeline->entries[pipelineIdx];
+		const PipelineVariantHandler handler = variantHandlersUnchecked[variant->type];
+		handler(variant, stack, &variables);
 	}
 
 	return popStack(stack);
