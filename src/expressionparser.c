@@ -227,3 +227,48 @@ ParsingError compileExpression(Pipeline* pipeline, PeekableStringSlice* peekable
 	}
 	return parseAddSubToken(pipeline, peekableSlice, variables);
 }
+
+void validateStackSizeWithPipeline(PipelineStack *stack, const Pipeline *pipeline){
+	clearStack(stack);
+	uint8_t pipelineLength = pipeline->index + 1;
+	for(Index pipelineIdx = 0; pipelineIdx < pipelineLength; pipelineIdx++){
+		const PipelineVariant* variant = &pipeline->entries[pipelineIdx];
+		switch (variant->type)
+		{
+			case CONSTANT:
+				{
+					ValueType constant = variant->asConstant;
+					pushStack(stack, constant);
+				}
+				break;
+			case VARIABLE_INDEX:
+				{
+					VariableIndex variableIndex = variant->asVariableIndex;
+					pushStack(stack, 1);
+				}
+				
+				break;
+			case OPERATION:
+				{
+					size_t argCount = getMetaByOperation(variant->asOperation).argCount;
+					for(size_t argPop = 0; argPop < argCount; argPop++){
+						popStack(stack);
+						if(pipeline->errorMask != NO_ERROR || stack->errorMask != NO_ERROR){
+							return;
+						}
+					}
+					pushStack(stack, 1);
+				}
+				break;
+			case NONE:
+				return;
+
+			if(pipeline->errorMask != NO_ERROR || stack->errorMask != NO_ERROR){
+				return;
+			}
+
+			
+		}
+	}
+	popStack(stack);
+}
