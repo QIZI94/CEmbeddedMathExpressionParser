@@ -30,8 +30,8 @@ typedef enum StackErrorMask {
 
 
 typedef struct {
-	ValueType entries[PIPELINE_STACK_SIZE];
 	Index index;
+	ValueType entries[PIPELINE_STACK_SIZE];
 	uint8_t errorMask;
 } PipelineStack;
 
@@ -87,8 +87,8 @@ typedef struct{
 // PIPELINE
 
 typedef struct {
-	PipelineVariant entries[50];
 	Index index;
+	PipelineVariant entries[50];
 	uint8_t errorMask;
 } Pipeline;
 

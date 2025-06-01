@@ -1,58 +1,5 @@
 #include "../include/execpipeline.h"
 
-
-
-// VARIANT HANDLERS
-
-typedef void (*PipelineVariantHandler)(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* variables);
-
-static void handleConstant(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* _v){
-	pushStack(stack, variant->asConstant);
-}
-static void handleVariableIndex(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* variables){
-	PipelineVariable variable = variables->vars[variant->asVariableIndex];
-	pushStack(stack, variable.value);
-}
-static void handleOperation(const PipelineVariant* variant, PipelineStack *stack, const PipelineVariablesSlice* _v){
-	PipelineOperation op = variant->asOperation;
-	ValueType result = op(stack);
-	pushStack(stack, result);
-}
-void handleNone(const PipelineVariant* variant, PipelineStack* _s, const PipelineVariablesSlice* _v){}
-
-// CONSTANT
-// VARIABLE_INDEX
-// OPERATION
-// NONE
-
-static const PipelineVariantHandler variantHandlers[] = {
-	handleConstant,
-	handleVariableIndex,
-	handleOperation,
-	handleNone
-};
-
-static void handleConstantUnchecked(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* _v){
-	pushStackUnchecked(stack, variant->asConstant);
-}
-static void handleVariableIndexUnchecked(const PipelineVariant* variant, PipelineStack* stack, const PipelineVariablesSlice* variables){
-	PipelineVariable variable = variables->vars[variant->asVariableIndex];
-	pushStackUnchecked(stack, variable.value);
-}
-static void handleOperationUnchecked(const PipelineVariant* variant, PipelineStack *stack, const PipelineVariablesSlice* _v){
-	PipelineOperation op = variant->asOperation;
-	ValueType result = op(stack);
-	pushStackUnchecked(stack, result);
-}
-
-
-static const PipelineVariantHandler variantHandlersUnchecked[] = {
-	handleConstantUnchecked,
-	handleVariableIndexUnchecked,
-	handleOperationUnchecked,
-	handleNone
-};
-
 // PIPELINE STACK
 
 void clearStack(PipelineStack* stack){
@@ -73,8 +20,7 @@ void pushStack(PipelineStack* stack, ValueType value){
 		stack->errorMask |= OVERFLOW;
 	}
 	else {
-		++stack->index;
-		stack->entries[stack->index] = value;
+		stack->entries[++stack->index] = value;
 	}
 	
 }
@@ -203,12 +149,32 @@ ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, Pipeli
 	uint8_t pipelineLength = pipeline->index + 1;
 	for(Index pipelineIdx = 0; pipelineIdx < pipelineLength; pipelineIdx++){
 		const PipelineVariant* variant = &pipeline->entries[pipelineIdx];
-		const PipelineVariantType variantType = variant->type;
-		if(variantType > NONE){
-			return MISSING_VALUE;
+		switch (variant->type)
+		{
+			case CONSTANT:
+				{
+					ValueType constant = variant->asConstant;
+					pushStackUnchecked(stack, constant);
+				}
+				break;
+			case VARIABLE_INDEX:
+				{
+					VariableIndex variableIndex = variant->asVariableIndex;
+					pushStackUnchecked(stack, variables.vars[variant->asVariableIndex].value);
+				}
+				
+				break;
+			case OPERATION:
+				{
+					PipelineOperation op = variant->asOperation;
+					ValueType result = op(stack);
+					pushStackUnchecked(stack, result);
+				}
+				break;
+			case NONE:
+				return MISSING_VALUE;
 		}
-		const PipelineVariantHandler handler = variantHandlers[variantType];
-		handler(variant, stack, &variables);
+
 	}
 
 	return popStack(stack);
@@ -219,9 +185,31 @@ ValueType executePipelineUnchecked(const Pipeline *pipeline, PipelineStack *stac
 	uint8_t pipelineLength = pipeline->index + 1;
 	for(Index pipelineIdx = 0; pipelineIdx < pipelineLength; pipelineIdx++){
 		const PipelineVariant* variant = &pipeline->entries[pipelineIdx];
-		const PipelineVariantHandler handler = variantHandlersUnchecked[variant->type];
-		handler(variant, stack, &variables);
+		switch (variant->type)
+		{
+			case CONSTANT:
+				{
+					ValueType constant = variant->asConstant;
+					pushStackUnchecked(stack, constant);
+				}
+				break;
+			case VARIABLE_INDEX:
+				{
+					VariableIndex variableIndex = variant->asVariableIndex;
+					pushStackUnchecked(stack, variables.vars[variant->asVariableIndex].value);
+				}
+				break;
+			case OPERATION:
+				{
+					PipelineOperation op = variant->asOperation;
+					ValueType result = op(stack);
+					pushStackUnchecked(stack, result);
+				}
+				break;
+			case NONE:
+				return MISSING_VALUE;
+		}
 	}
 
-	return popStack(stack);
+	return popStackUnchecked(stack);
 }
