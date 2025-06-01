@@ -154,13 +154,13 @@ ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, Pipeli
 			case CONSTANT:
 				{
 					ValueType constant = variant->asConstant;
-					pushStackUnchecked(stack, constant);
+					pushStack(stack, constant);
 				}
 				break;
 			case VARIABLE_INDEX:
 				{
 					VariableIndex variableIndex = variant->asVariableIndex;
-					pushStackUnchecked(stack, variables.vars[variant->asVariableIndex].value);
+					pushStack(stack, variables.vars[variant->asVariableIndex].value);
 				}
 				
 				break;
@@ -168,7 +168,7 @@ ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, Pipeli
 				{
 					PipelineOperation op = variant->asOperation;
 					ValueType result = op(stack);
-					pushStackUnchecked(stack, result);
+					pushStack(stack, result);
 				}
 				break;
 			case NONE:
