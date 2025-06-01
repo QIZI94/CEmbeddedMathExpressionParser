@@ -42,6 +42,6 @@ extern ParsingError parseMulDivToken(Pipeline* pipeline, PeekableStringSlice* pe
 extern ParsingError parseAddSubToken(Pipeline* pipeline, PeekableStringSlice* peekableSlice, PipelineVariablesSlice variables);
 extern ParsingError compileExpression(Pipeline* pipeline, PeekableStringSlice* peekableSlice, PipelineVariablesSlice variables);
 
-extern void validateStackSizeWithPipeline(const Pipeline* pipeline, PipelineStack* stack, PipelineVariablesSlice variables);
+extern void validateStackSizeWithPipeline(PipelineStack* stack, const Pipeline* pipeline);
 
 #endif
