@@ -4,40 +4,40 @@
 
 // operations 
 ValueType opAdd(PipelineStack* stack){
-	ValueType right = popStack(stack);
-	ValueType left = popStack(stack);
+	ValueType right = popStackUnchecked(stack);
+	ValueType left = popStackUnchecked(stack);
 
 	return left + right;
 }
 
 ValueType opSub(PipelineStack* stack){
-	ValueType right = popStack(stack);
-	ValueType left = popStack(stack);
+	ValueType right = popStackUnchecked(stack);
+	ValueType left = popStackUnchecked(stack);
 
 	return left - right;
 }
 
 ValueType opMul(PipelineStack* stack){
-	ValueType right = popStack(stack);
-	ValueType left = popStack(stack);
+	ValueType right = popStackUnchecked(stack);
+	ValueType left = popStackUnchecked(stack);
 
 	return left * right;
 }
 
 ValueType opDiv(PipelineStack* stack){
-	ValueType right = popStack(stack);
-	ValueType left = popStack(stack);
+	ValueType right = popStackUnchecked(stack);
+	ValueType left = popStackUnchecked(stack);
 	return left / right;
 }
 
 ValueType opMod(PipelineStack* stack){
-	ValueType right = popStack(stack);
-	ValueType left = popStack(stack);
+	ValueType right = popStackUnchecked(stack);
+	ValueType left = popStackUnchecked(stack);
 	return left % right;
 }
 
 ValueType opPow2(PipelineStack* stack){
-	ValueType powered = popStack(stack);
+	ValueType powered = popStackUnchecked(stack);
 	return powered * powered;
 }
 

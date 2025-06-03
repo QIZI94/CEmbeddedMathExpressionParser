@@ -155,8 +155,7 @@ ParsingError parseMulDivToken(Pipeline* pipeline, PeekableStringSlice* peekableS
 			if(err.type != NOERROR){
 				return err;
 			}
-			PipelineOperation opMul = getOperationByName(MAKE_SLICE_FROM_CONST_STRING("mul"));
-			pushPipeline(pipeline, makeStepAsOperation(opMul));
+			pushPipeline(pipeline, (PipelineVariant){.type = OPERATION_NATIVE_MUL});
 			if(pipeline->errorMask & OVERFLOW){
 				return PARSING_ERROR(PIPELINE_FULL, peekableSlice->cursor, peekToken(peekableSlice));
 			}
@@ -167,8 +166,7 @@ ParsingError parseMulDivToken(Pipeline* pipeline, PeekableStringSlice* peekableS
 			if(err.type != NOERROR){
 				return err;
 			}
-            PipelineOperation opDiv = getOperationByName(MAKE_SLICE_FROM_CONST_STRING("div"));
-			pushPipeline(pipeline, makeStepAsOperation(opDiv));
+			pushPipeline(pipeline, (PipelineVariant){.type = OPERATION_NATIVE_DIV});
 			if(pipeline->errorMask & OVERFLOW){
 				return PARSING_ERROR(PIPELINE_FULL, peekableSlice->cursor, peekToken(peekableSlice));
 			}
@@ -177,8 +175,7 @@ ParsingError parseMulDivToken(Pipeline* pipeline, PeekableStringSlice* peekableS
 			if(err.type != NOERROR){
 				return err;
 			}
-            PipelineOperation opDiv = getOperationByName(MAKE_SLICE_FROM_CONST_STRING("mod"));
-			pushPipeline(pipeline, makeStepAsOperation(opDiv));
+			pushPipeline(pipeline, (PipelineVariant){.type = OPERATION_NATIVE_MOD});
 			if(pipeline->errorMask & OVERFLOW){
 				return PARSING_ERROR(PIPELINE_FULL, peekableSlice->cursor, peekToken(peekableSlice));
 			}
@@ -198,8 +195,7 @@ ParsingError parseAddSubToken(Pipeline* pipeline, PeekableStringSlice* peekableS
 			if(err.type != NOERROR){
 				return err;
 			}
-			PipelineOperation opAdd = getOperationByName(MAKE_SLICE_FROM_CONST_STRING("add"));
-			pushPipeline(pipeline, makeStepAsOperation(opAdd));
+			pushPipeline(pipeline, (PipelineVariant){.type = OPERATION_NATIVE_ADD});
 			if(pipeline->errorMask & OVERFLOW){
 				return PARSING_ERROR(PIPELINE_FULL, peekableSlice->cursor, peekToken(peekableSlice));
 			}
@@ -208,8 +204,7 @@ ParsingError parseAddSubToken(Pipeline* pipeline, PeekableStringSlice* peekableS
 			if(err.type != NOERROR){
 				return err;
 			}
-			PipelineOperation opSub = getOperationByName(MAKE_SLICE_FROM_CONST_STRING("sub"));
-			pushPipeline(pipeline, makeStepAsOperation(opSub));
+			pushPipeline(pipeline, (PipelineVariant){.type = OPERATION_NATIVE_SUB});
 			if(pipeline->errorMask & OVERFLOW){
 				return PARSING_ERROR(PIPELINE_FULL, peekableSlice->cursor, peekToken(peekableSlice));
 			}

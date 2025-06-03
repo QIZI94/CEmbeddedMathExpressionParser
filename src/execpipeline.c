@@ -58,10 +58,6 @@ uint8_t lengthOfStack(const PipelineStack* stack){
 	return stack->index + 1;
 }
 
-uint8_t capacityOfStack(const PipelineStack *stack)
-{
-	return PIPELINE_STACK_SIZE;
-}
 
 // PIPELINE VARIANT
 
@@ -103,8 +99,14 @@ void clearPipeline(Pipeline* pipeline){
 	pipeline->errorMask = NO_ERROR;
 }
 
-void initPipeline(Pipeline* pipeline){
-	clearPipeline(pipeline);
+Pipeline createPipeline(PipelineVariant storageLink[], uint8_t storageCapacity){
+	return (Pipeline){
+		.index = NONE_INDEX,
+		.capacity = storageCapacity,
+		.errorMask = NO_ERROR,
+		.entries = storageLink
+		
+	};
 }
 
 void pushPipeline(Pipeline* pipeline, PipelineVariant value){
@@ -112,7 +114,7 @@ void pushPipeline(Pipeline* pipeline, PipelineVariant value){
 		pipeline->index = 0;
 		pipeline->entries[0] = value;
 	}
-	else if( PIPELINE_SIZE <= (pipeline->index + 1)) {
+	else if( pipeline->capacity <= (pipeline->index + 1)) {
 		pipeline->errorMask |= OVERFLOW;
 	}
 	else {
@@ -134,11 +136,6 @@ uint8_t lengthOfPipeline(const Pipeline *pipeline){
 	return pipeline->index + 1;;
 }
 
-uint8_t capacityOfPipeline(const Pipeline *pipeline)
-{
-	return PIPELINE_SIZE;
-}
-
 ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables, bool clearStackOnExecution){
 	if(clearStackOnExecution){
 		clearStack(stack);
@@ -146,11 +143,53 @@ ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, Pipeli
 	if(pipeline->index == NONE_INDEX){
 		return MISSING_VALUE;
 	}
+	ValueType right;
+	ValueType left;
+	
+	ValueType* stackStorage = stack->entries;
+	Index* stackIndex = &stack->index;
+	
 	uint8_t pipelineLength = pipeline->index + 1;
 	for(Index pipelineIdx = 0; pipelineIdx < pipelineLength; pipelineIdx++){
 		const PipelineVariant* variant = &pipeline->entries[pipelineIdx];
 		switch (variant->type)
 		{
+						case OPERATION_NATIVE_ADD:
+				{
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left + right;
+				}
+				break;
+			case OPERATION_NATIVE_SUB:
+				{						
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left - right;
+				}
+				break;
+			case OPERATION_NATIVE_MUL:
+				{						
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left * right;
+				}
+				break;
+			case OPERATION_NATIVE_DIV:
+				{						
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left / right;
+				}
+				break;
+			case OPERATION_NATIVE_MOD:
+				{						
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left % right;
+				}
+				break;
+			
 			case CONSTANT:
 				{
 					ValueType constant = variant->asConstant;
@@ -182,21 +221,63 @@ ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, Pipeli
 ValueType executePipelineUnchecked(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables){
 
 	clearStack(stack);
+	ValueType right;
+	ValueType left;
+	
+	ValueType* stackStorage = stack->entries;
+	Index* stackIndex = &stack->index;
+	
 	uint8_t pipelineLength = pipeline->index + 1;
 	for(Index pipelineIdx = 0; pipelineIdx < pipelineLength; pipelineIdx++){
 		const PipelineVariant* variant = &pipeline->entries[pipelineIdx];
 		switch (variant->type)
 		{
-			case CONSTANT:
+			case OPERATION_NATIVE_ADD:
 				{
-					ValueType constant = variant->asConstant;
-					pushStackUnchecked(stack, constant);
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left + right;
+				}
+				break;
+			case OPERATION_NATIVE_SUB:
+				{						
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left - right;
+				}
+				break;
+			case OPERATION_NATIVE_MUL:
+				{						
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left * right;
+				}
+				break;
+			case OPERATION_NATIVE_DIV:
+				{						
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left / right;
+				}
+				break;
+			case OPERATION_NATIVE_MOD:
+				{						
+					--(*stackIndex);
+					left = stackStorage[(*stackIndex)];
+					right = stackStorage[(*stackIndex)] = left % right;
+				}
+				break;
+			case CONSTANT:
+				{	
+					right = variant->asConstant;
+					pushStackUnchecked(stack, right);
 				}
 				break;
 			case VARIABLE_INDEX:
 				{
 					VariableIndex variableIndex = variant->asVariableIndex;
-					pushStackUnchecked(stack, variables.vars[variant->asVariableIndex].value);
+					right = variables.vars[variant->asVariableIndex].value;
+					pushStackUnchecked(stack, right);
 				}
 				break;
 			case OPERATION:

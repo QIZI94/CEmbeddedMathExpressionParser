@@ -8,9 +8,6 @@
 
 #define ARRAY_CONST_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
 
-#define PIPELINE_STACK_SIZE 50
-#define PIPELINE_SIZE 50
-
 typedef uint8_t Index;
 
 
@@ -21,6 +18,9 @@ typedef int32_t ValueType;
 
 
 // PIPELINE STACK
+#ifndef PIPELINE_STACK_SIZE
+#define PIPELINE_STACK_SIZE 50
+#endif
 typedef enum StackErrorMask {
 	NO_ERROR = 0x00,
 	OVERFLOW = 0x01,
@@ -31,12 +31,11 @@ typedef enum StackErrorMask {
 
 typedef struct {
 	Index index;
-	ValueType entries[PIPELINE_STACK_SIZE];
 	uint8_t errorMask;
+	ValueType entries[PIPELINE_STACK_SIZE];
 } PipelineStack;
 
 extern void clearStack(PipelineStack* stack);
-extern void initStack(PipelineStack* stack);
 extern void pushStack(PipelineStack* stack, ValueType value);
 extern ValueType popStack(PipelineStack* stack);
 void pushStackUnchecked(PipelineStack* stack, ValueType value);
@@ -44,10 +43,15 @@ ValueType popStackUnchecked(PipelineStack* stack);
 
 extern const ValueType* getPtrFromStackIndex(const PipelineStack* stack, Index index);
 extern uint8_t lengthOfStack(const PipelineStack* stack);
-extern uint8_t capacityOfStack(const PipelineStack* stack);
+
 
 // PIPELINE VARIANT
 typedef enum {
+	OPERATION_NATIVE_ADD,
+	OPERATION_NATIVE_SUB,
+	OPERATION_NATIVE_MUL,
+	OPERATION_NATIVE_DIV,
+	OPERATION_NATIVE_MOD,
     CONSTANT,
     VARIABLE_INDEX,
     OPERATION,
@@ -88,16 +92,19 @@ typedef struct{
 
 typedef struct {
 	Index index;
-	PipelineVariant entries[50];
+	uint8_t capacity;
 	uint8_t errorMask;
+	PipelineVariant* entries;
 } Pipeline;
 
+#define CREATE_PIPELINE_FROM_CONST_STORAGE(storage) ((Pipeline){.index = NO_ERROR, .capacity = ARRAY_CONST_SIZE(storage), .errorMask = NO_ERROR, .entries = storage})
+
+Pipeline createPipeline(PipelineVariant storageLink[], uint8_t storageCapacity);
+
 extern void clearPipeline(Pipeline* pipeline);
-extern void initPipeline(Pipeline* pipeline);
 extern void pushPipeline(Pipeline* pipeline, PipelineVariant value);
 extern const PipelineVariant* getPtrFromPipelineIndex(const Pipeline* pipeline, Index index);
 extern uint8_t lengthOfPipeline(const Pipeline* pipeline);
-extern uint8_t capacityOfPipeline(const Pipeline* pipeline);
 
 extern ValueType executePipeline(const Pipeline* pipeline, PipelineStack* stack, PipelineVariablesSlice variables, bool clearStackOnExecution);
 extern ValueType executePipelineUnchecked(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables);
