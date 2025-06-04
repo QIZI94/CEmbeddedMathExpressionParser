@@ -15,6 +15,7 @@ typedef int32_t ValueType;
 
 #define NONE_INDEX UINT8_MAX
 #define MISSING_VALUE (ValueType)(1)
+#define EMPTY_SLICE {NULL, 0}
 
 
 // PIPELINE STACK
@@ -42,7 +43,6 @@ extern ValueType popStack(PipelineStack* stack);
 void pushStackUnchecked(PipelineStack* stack, ValueType value);
 ValueType popStackUnchecked(PipelineStack* stack);
 
-extern const ValueType* getPtrFromStackIndex(const PipelineStack* stack, Index index);
 extern uint8_t lengthOfStack(const PipelineStack* stack);
 
 
@@ -53,11 +53,20 @@ typedef enum {
 	OPERATION_NATIVE_MUL,
 	OPERATION_NATIVE_DIV,
 	OPERATION_NATIVE_MOD,
+//	OPERATION_NATIVE_ABS,
     CONSTANT,
     VARIABLE_INDEX,
     OPERATION,
 	NONE
 } PipelineVariantType;
+
+#define OPERATION_NATIVE_ADD_ARGCOUNT (2)
+#define OPERATION_NATIVE_SUB_ARGCOUNT (2)
+#define OPERATION_NATIVE_MUL_ARGCOUNT (2)
+#define OPERATION_NATIVE_DIV_ARGCOUNT (2)
+#define OPERATION_NATIVE_MOD_ARGCOUNT (2)
+//#define OPERATION_NATIVE_ABS_ARGCOUNT (1)
+
 
 typedef ValueType (*PipelineOperation)(PipelineStack* stack);
 typedef ValueType Constant;

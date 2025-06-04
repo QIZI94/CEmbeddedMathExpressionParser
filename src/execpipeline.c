@@ -46,14 +46,6 @@ ValueType popStackUnchecked(PipelineStack* stack){
 	return stack->entries[stack->index--];
 }
 
-const ValueType* getPtrFromStackIndex(const PipelineStack* stack, Index index){
-	if(stack->index == NONE_INDEX){
-		return NULL;
-	}
-
-	return &stack->entries[stack->index];	
-}
-
 uint8_t lengthOfStack(const PipelineStack* stack){
 	return stack->index + 1;
 }
@@ -61,29 +53,24 @@ uint8_t lengthOfStack(const PipelineStack* stack){
 
 // PIPELINE VARIANT
 
-PipelineVariant makeStepAsConstant(ValueType value)
-{
-    PipelineVariant result = {
-        .type = CONSTANT,
-        {.asConstant = value}
-    };
+PipelineVariant makeStepAsConstant(ValueType value){
+    PipelineVariant result;
+    result.type = CONSTANT;
+    result.asConstant = value;
     return result;
-    
 }
 
 PipelineVariant makeStepAsVariableIndex(Index value){
-    PipelineVariant result = {
-        .type = VARIABLE_INDEX,
-        {.asVariableIndex = value}
-    };
+    PipelineVariant result;
+    result.type = VARIABLE_INDEX;
+    result.asVariableIndex = value;
     return result;
 }
 
 PipelineVariant makeStepAsOperation(PipelineOperation value){
-    PipelineVariant result = {
-        .type = OPERATION,
-        {.asOperation = value}
-    };
+    PipelineVariant result;
+    result.type = OPERATION;
+    result.asOperation = value;
     return result;
 }
 
