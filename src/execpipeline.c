@@ -136,89 +136,7 @@ uint8_t lengthOfPipeline(const Pipeline *pipeline){
 	return pipeline->index + 1;;
 }
 
-ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables, bool clearStackOnExecution){
-	if(clearStackOnExecution){
-		clearStack(stack);
-	}
-	if(pipeline->index == NONE_INDEX){
-		return MISSING_VALUE;
-	}
-	ValueType right;
-	ValueType left;
-	
-	ValueType* stackStorage = stack->entries;
-	Index* stackIndex = &stack->index;
-	
-	uint8_t pipelineLength = pipeline->index + 1;
-	for(Index pipelineIdx = 0; pipelineIdx < pipelineLength; pipelineIdx++){
-		const PipelineVariant* variant = &pipeline->entries[pipelineIdx];
-		switch (variant->type)
-		{
-						case OPERATION_NATIVE_ADD:
-				{
-					--(*stackIndex);
-					left = stackStorage[(*stackIndex)];
-					right = stackStorage[(*stackIndex)] = left + right;
-				}
-				break;
-			case OPERATION_NATIVE_SUB:
-				{						
-					--(*stackIndex);
-					left = stackStorage[(*stackIndex)];
-					right = stackStorage[(*stackIndex)] = left - right;
-				}
-				break;
-			case OPERATION_NATIVE_MUL:
-				{						
-					--(*stackIndex);
-					left = stackStorage[(*stackIndex)];
-					right = stackStorage[(*stackIndex)] = left * right;
-				}
-				break;
-			case OPERATION_NATIVE_DIV:
-				{						
-					--(*stackIndex);
-					left = stackStorage[(*stackIndex)];
-					right = stackStorage[(*stackIndex)] = left / right;
-				}
-				break;
-			case OPERATION_NATIVE_MOD:
-				{						
-					--(*stackIndex);
-					left = stackStorage[(*stackIndex)];
-					right = stackStorage[(*stackIndex)] = left % right;
-				}
-				break;
-			
-			case CONSTANT:
-				{
-					ValueType constant = variant->asConstant;
-					pushStack(stack, constant);
-				}
-				break;
-			case VARIABLE_INDEX:
-				{
-					VariableIndex variableIndex = variant->asVariableIndex;
-					pushStack(stack, variables.vars[variant->asVariableIndex].value);
-				}
-				
-				break;
-			case OPERATION:
-				{
-					PipelineOperation op = variant->asOperation;
-					ValueType result = op(stack);
-					pushStack(stack, result);
-				}
-				break;
-			case NONE:
-				return MISSING_VALUE;
-		}
-
-	}
-
-	return popStack(stack);
-}
-ValueType executePipelineUnchecked(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables){
+ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables){
 
 	clearStack(stack);
 	ValueType right;
@@ -283,8 +201,8 @@ ValueType executePipelineUnchecked(const Pipeline *pipeline, PipelineStack *stac
 			case OPERATION:
 				{
 					PipelineOperation op = variant->asOperation;
-					ValueType result = op(stack);
-					pushStackUnchecked(stack, result);
+					right = op(stack);
+					pushStackUnchecked(stack, right);
 				}
 				break;
 			case NONE:

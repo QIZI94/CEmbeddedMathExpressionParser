@@ -107,7 +107,6 @@ extern void pushPipeline(Pipeline* pipeline, PipelineVariant value);
 extern const PipelineVariant* getPtrFromPipelineIndex(const Pipeline* pipeline, Index index);
 extern uint8_t lengthOfPipeline(const Pipeline* pipeline);
 
-extern ValueType executePipeline(const Pipeline* pipeline, PipelineStack* stack, PipelineVariablesSlice variables, bool clearStackOnExecution);
-extern ValueType executePipelineUnchecked(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables);
+extern ValueType executePipeline(const Pipeline *pipeline, PipelineStack *stack, PipelineVariablesSlice variables);
 
 #endif
