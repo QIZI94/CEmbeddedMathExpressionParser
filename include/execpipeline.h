@@ -35,6 +35,7 @@ typedef struct {
 	ValueType entries[PIPELINE_STACK_SIZE];
 } PipelineStack;
 
+extern void initStack(PipelineStack* stack);
 extern void clearStack(PipelineStack* stack);
 extern void pushStack(PipelineStack* stack, ValueType value);
 extern ValueType popStack(PipelineStack* stack);
@@ -97,7 +98,7 @@ typedef struct {
 	PipelineVariant* entries;
 } Pipeline;
 
-#define CREATE_PIPELINE_FROM_CONST_STORAGE(storage) ((Pipeline){.index = NO_ERROR, .capacity = ARRAY_CONST_SIZE(storage), .errorMask = NO_ERROR, .entries = storage})
+#define CREATE_PIPELINE_FROM_CONST_STORAGE(storage) ((Pipeline){.index = NONE_INDEX, .capacity = ARRAY_CONST_SIZE(storage), .errorMask = NO_ERROR, .entries = storage})
 
 Pipeline createPipeline(PipelineVariant storageLink[], uint8_t storageCapacity);
 
